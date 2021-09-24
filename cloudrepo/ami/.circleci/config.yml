@@ -1,0 +1,50 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@0.1.6
+
+description: |
+  To install AWS CLI and Python
+
+commands:
+  install:
+    description: |
+      To install AWS CLI and Python
+
+    steps:
+      - run:
+          name: python download
+          command: |
+            if ! [ -x "$(which python3)" ]; then
+              sudo apt-get install python3
+            fi
+            if ! [ -x "$(which pip3)" ]; then
+              sudo apt-get install python3-pip
+            fi
+      - aws-cli/install
+
+
+
+
+jobs:
+  validate:
+    docker:
+      - image: hashicorp/packer:1.1.1
+    working_directory: ~/packer
+    steps:
+      - checkout
+      - run: echo aws --version
+      - run:
+          name: file validate
+          command: packer validate ami.json
+      - run:
+          name: packer build
+          command: packer build ami.json
+
+
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - validate
